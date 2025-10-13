@@ -90,11 +90,11 @@
 // REF
 - (void)setCenter:(YMKCameraPosition *)position withDuration:(float)duration withAnimation:(int)animation {
     if (duration > 0) {
-        YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
-        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
-    } else {
-        [self.mapWindow.map moveWithCameraPosition:position];
-    }
+          YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
+          [self.mapWindow.map moveWithCameraPosition:position animation:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
+      } else {
+          [self.mapWindow.map moveWithCameraPosition:position];
+      }
 }
 
 - (void)setZoom:(float)zoom withDuration:(float)duration withAnimation:(int)animation {
@@ -349,9 +349,9 @@
         [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:[self calculateBoundingBox:points]];
+    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithGeometry:[YMKGeometry geometryWithBoundingBox:[self calculateBoundingBox:points]]];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
+    [self.mapWindow.map moveWithCameraPosition:cameraPosition animation:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
 - (void)setLogoPosition:(NSDictionary *)logoPosition {
@@ -482,34 +482,34 @@
 
 - (void)insertReactSubview:(UIView<RCTComponent> *)subview atIndex:(NSInteger)atIndex {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolygonView *polygon = (YamapPolygonView *) subview;
-        YMKPolygonMapObject *obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
-        [polygon setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolylineView *polyline = (YamapPolylineView*) subview;
-        YMKPolylineMapObject *obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
-        [polyline setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapMarkerView *marker = (YamapMarkerView *) subview;
-        YMKPlacemarkMapObject *obj = [objects addPlacemarkWithPoint:[marker getPoint]];
-        [marker setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapCircleView *circle = (YamapCircleView*) subview;
-        YMKCircleMapObject *obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
-        [circle setMapObject:obj];
-    } else {
-        NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
-        for (int i = 0; i < childSubviews.count; i++) {
-            [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolygonView *polygon = (YamapPolygonView *) subview;
+            YMKPolygonMapObject *obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
+            [polygon setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolylineView *polyline = (YamapPolylineView*) subview;
+            YMKPolylineMapObject *obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
+            [polyline setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapMarkerView *marker = (YamapMarkerView *) subview;
+            YMKPlacemarkMapObject *obj = [objects addPlacemarkWithPoint:[marker getPoint]];
+            [marker setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapCircleView *circle = (YamapCircleView*) subview;
+            YMKCircleMapObject *obj = [objects addCircleWithCircle:[circle getCircle]];
+            [circle setMapObject:obj];
+        } else {
+            NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
+            for (int i = 0; i < childSubviews.count; i++) {
+                [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+            }
         }
-    }
 
-    [_reactSubviews insertObject:subview atIndex:atIndex];
-    [super insertReactSubview:subview atIndex:atIndex];
+        [_reactSubviews insertObject:subview atIndex:atIndex];
+        [super insertReactSubview:subview atIndex:atIndex];
 }
 
 - (void)insertMarkerReactSubview:(UIView<RCTComponent> *) subview atIndex:(NSInteger) atIndex {
