@@ -390,7 +390,13 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         Point northEast = new Point(maxLat, maxLon);
 
         BoundingBox boundingBox = new BoundingBox(southWest, northEast);
-        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
+        // API изменился в версии 4.19.0: cameraPosition больше не принимает BoundingBox
+        // Используем центр boundingBox и вычисляем зум вручную
+        Point center = new Point((minLat + maxLat) / 2.0, (minLon + maxLon) / 2.0);
+        double latDiff = maxLat - minLat;
+        double lonDiff = maxLon - minLon;
+        float zoom = (float) Math.max(0, 17 - Math.log(Math.max(latDiff, lonDiff)) / Math.log(2));
+        CameraPosition cameraPosition = new CameraPosition(center, zoom, 0.0f, 0.0f);
         cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
@@ -536,10 +542,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (show) {
             userLocationLayer.setObjectListener(this);
             userLocationLayer.setVisible(true);
-            userLocationLayer.setHeadingEnabled(true);
+            // userLocationLayer.setHeadingEnabled(true); // Удален в API 4.19.0
         } else {
             userLocationLayer.setVisible(false);
-            userLocationLayer.setHeadingEnabled(false);
+            // userLocationLayer.setHeadingEnabled(false); // Удален в API 4.19.0
             userLocationLayer.setObjectListener(null);
         }
     }
@@ -707,7 +713,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             }
         } else if (child instanceof YamapCircle) {
             YamapCircle _child = (YamapCircle) child;
-            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
+            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle);
             _child.setMapObject(obj);
         }
     }
