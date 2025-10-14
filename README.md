@@ -6,9 +6,9 @@
 
 Оригинальная библиотека: https://github.com/volga-volga/react-native-yamap
 
-iOS: 4.2.2-lite
+iOS: 4.19.0-lite
 
-Android: 4.1.0-lite
+Android: 4.19.0-lite
 
 ## Установка
 
