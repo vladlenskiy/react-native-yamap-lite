@@ -30,6 +30,7 @@ import com.yandex.mapkit.RequestPointType;
 //import com.yandex.mapkit.directions.driving.DrivingSession;
 //import com.yandex.mapkit.directions.driving.VehicleOptions;
 import com.yandex.mapkit.geometry.BoundingBox;
+import com.yandex.mapkit.geometry.Geometry;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
@@ -390,13 +391,12 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         Point northEast = new Point(maxLat, maxLon);
 
         BoundingBox boundingBox = new BoundingBox(southWest, northEast);
-        // API изменился в версии 4.19.0: cameraPosition больше не принимает BoundingBox
-        // Используем центр boundingBox и вычисляем зум вручную
-        Point center = new Point((minLat + maxLat) / 2.0, (minLon + maxLon) / 2.0);
-        double latDiff = maxLat - minLat;
-        double lonDiff = maxLon - minLon;
-        float zoom = (float) Math.max(0, 17 - Math.log(Math.max(latDiff, lonDiff)) / Math.log(2));
-        CameraPosition cameraPosition = new CameraPosition(center, zoom, 0.0f, 0.0f);
+        // Начиная с MapKit 4.19.0 cameraPosition принимает Geometry вместо BoundingBox.
+        // Используем нативный расчёт по геометрии (как в iOS-реализации через
+        // cameraPositionWithGeometry) — он учитывает реальный размер вьюпорта карты.
+        // Прежняя ручная формула зума размер вьюпорта игнорировала, из-за чего на
+        // небольших картах камера приближалась слишком сильно и маркеры уходили за края.
+        CameraPosition cameraPosition = getMap().cameraPosition(Geometry.fromBoundingBox(boundingBox));
         cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
